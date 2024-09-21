@@ -1,17 +1,22 @@
-import { Box, Button, Dialog, DialogTitle, TextField } from '@mui/material'
+import { Alert, Box, Button, Dialog, DialogTitle, TextField } from '@mui/material'
 import DialogContent from '@mui/material/DialogContent'
 import { useState } from 'react'
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 export default function LoginModal() {
+
+    const { executeRecaptcha } = useGoogleReCaptcha();
 
     const [state, setState] = useState<{
         open: boolean,
         usermail: string,
         password: string,
+        error: string,
     }>({
         open: false,
         usermail: "",
         password: "",
+        error: "",
     })
 
     function onOpen() {
@@ -23,6 +28,7 @@ export default function LoginModal() {
             open: false,
             usermail: "",
             password: "",
+            error: "",
         })
     }
 
@@ -33,22 +39,33 @@ export default function LoginModal() {
         }))
     }
 
-    function onSubmit() {
+    async function onSubmit() {
+        if (!executeRecaptcha) {
+            setState((prevState) => ({ ...prevState, error: 'recaptcha not yet available' }));
+            return;
+        }
+
+        const token = await executeRecaptcha('login');
+
         fetch("http://localhost:8080/login", {
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
             method: "POST",
             body: JSON.stringify({
                 usermail: state.usermail,
                 password: state.password,
+                recaptcha_token: token,
             }),
         })
             .then(async (resp) => {
                 if (resp.status === 200) {
                     onClose()
                     return
+                } else {
+                    let errorMessage = await resp.text();
+                    setState((prevState) => ({
+                        ...prevState,
+                        error: errorMessage,
+                    })
+                    )
                 }
             })
             .catch((err) => console.log(err))
@@ -92,7 +109,7 @@ export default function LoginModal() {
                                 />
                             </Box>
                         </Box>
-                        <Box display="flex" justifyContent="flex-end">
+                        <Box display="flex" justifyContent="flex-end" alignItems="left" >
                             <Box pr={1}>
                                 <Button variant="outlined" onClick={onClose}>Cancel</Button>
                             </Box>
@@ -100,6 +117,12 @@ export default function LoginModal() {
                                 <Button variant="outlined" onClick={onSubmit}>Login</Button>
                             </Box>
                         </Box>
+                        <Box></Box>
+                        {!!state.error && (
+                            <Box mt={2}>
+                                <Alert severity="error" variant="outlined">{state.error}</Alert>
+                            </Box>
+                        )}
                     </DialogContent>
                 </Dialog>
             </Box>

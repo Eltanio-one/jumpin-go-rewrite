@@ -1,5 +1,6 @@
 import './App.css';
 import LoginModal from './components/LoginModal';
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 
 function App() {
   return (
@@ -8,8 +9,9 @@ function App() {
         <p>
           Welcome to JumpIn
         </p>
-        <LoginModal
-        />
+        <GoogleReCaptchaProvider reCaptchaKey="6Lc19UoqAAAAAM2mCg193zC3JghzJDNowoepquia">
+          <LoginModal />
+        </GoogleReCaptchaProvider>
       </header>
     </div>
   );

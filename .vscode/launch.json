@@ -10,13 +10,6 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "env": {
-                "PORT": "3000"
-            },
-            "args": [
-                "-port",
-                "3000"
-            ]
         }
     ]
 }

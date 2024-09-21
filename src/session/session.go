@@ -5,14 +5,19 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Eltanio-one/jumpin-go-rewrite/src/data"
+	"github.com/gorilla/sessions"
 )
 
 // create a map to store tokens in.
 // This is not the safest option, but for this proof of concept works well for verifying that a user has their own token being passed.
 // var SessionTokens = make(map[string]int)
+func GenerateStore() *sessions.CookieStore {
+	return sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+}
 
 // GenerateSecureToken takes in a length (desired length of secure token) as an int and returns a string and an error.
 // a slice of bytes of the given length is instantiated.

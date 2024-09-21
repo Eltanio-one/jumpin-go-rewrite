@@ -10,10 +10,30 @@ import (
 	"time"
 
 	"github.com/Eltanio-one/jumpin-go-rewrite/src/handler"
+	"github.com/Eltanio-one/jumpin-go-rewrite/src/session"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	logger := log.New(os.Stdout, "jumpin-rewrite", log.LstdFlags)
+
+	sessionKey, err := session.GenerateSecureToken(32)
+	if err != nil {
+		logger.Println("error generating secure session token: ", err)
+		return
+	}
+	os.Setenv("SESSION_KEY", sessionKey)
+
+	err = godotenv.Load()
+	if err != nil {
+		logger.Println("error loading .env file: ", err)
+		return
+	}
+
+	store := session.GenerateStore()
+
+	handler.Store = store
 
 	mux := http.NewServeMux()
 
@@ -32,7 +52,7 @@ func main() {
 	go func() {
 		err := srvr.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			logger.Println("Error serving due to:", err)
+			logger.Println("error serving due to:", err)
 			return
 		}
 	}()
@@ -41,7 +61,7 @@ func main() {
 	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
 
 	sig := <-signalChannel
-	logger.Println("Server terminating, gracefully exiting", sig)
+	logger.Println("server terminating, gracefully exiting", sig)
 
 	timeoutContext, cancelCtx := context.WithTimeout(context.Background(), 30*time.Second)
 
