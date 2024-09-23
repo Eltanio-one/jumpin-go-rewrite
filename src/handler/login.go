@@ -100,10 +100,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		query = "SELECT userid, username, email, hash, dateofbirth, accountcreated FROM users WHERE email = $1"
 	}
 
-	user, err = database.FetchRow(db, query, requestData.Usermail)
+	user, err = database.FetchUser(db, query, requestData.Usermail)
 	if err != nil {
 		logger.Printf("error=%q statuscode=%d message=%q", "database connection error", http.StatusInternalServerError, err.Error())
-		http.Error(w, "unable to initiate connection to database", http.StatusInternalServerError)
+		http.Error(w, "unable to fetch user details", http.StatusInternalServerError)
 		return
 	}
 
@@ -132,6 +132,5 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// return 200
 	w.WriteHeader(200)
 }
