@@ -9,7 +9,7 @@ import (
 
 const (
 	usermailPattern       = `^(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9._%+-]{3,20})$`
-	usernamePattern       = `^[a-zA-Z0-9._%+-]{3,20})$`
+	usernamePattern       = `^([a-zA-Z0-9._%+-]{3,20})$`
 	emailPattern          = `^(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$`
 	minimumIntegerPattern = `[0-9]`
 	minimumSpecialPattern = `[!@#\$%\^&\*\(\)_\+\[\]\{\}\|;:'",.<>?/\\]`

@@ -1,41 +1,44 @@
 import { Alert, Box, Button, Dialog, DialogTitle, TextField } from '@mui/material'
 import DialogContent from '@mui/material/DialogContent'
 import { useState } from 'react'
-import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import { useNavigate } from 'react-router-dom';
-import { useUser } from './UserContext';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
-export default function LoginModal() {
-
-    const { executeRecaptcha } = useGoogleReCaptcha();
-
-    const { setUser } = useUser();
+export default function GymRegisterModal() {
 
     const [state, setState] = useState<{
         open: boolean,
-        usermail: string,
+        name: string,
+        email: string,
         password: string,
+        confirmation: string,
+        address: string,
         error: string,
     }>({
         open: false,
-        usermail: "",
+        name: "",
+        email: "",
         password: "",
+        confirmation: "",
+        address: "",
         error: "",
     })
-
-    const navigate = useNavigate();
 
     function onOpen() {
         setState((prevState) => ({ ...prevState, open: true }));
     }
 
     function onClose() {
-        setState({
+        setState((prevState) => ({
+            ...prevState,
             open: false,
-            usermail: "",
+            name: "",
+            email: "",
             password: "",
+            confirmation: "",
+            address: "",
             error: "",
-        })
+        }))
     }
 
     function onTyping(e: React.ChangeEvent<any>) {
@@ -46,27 +49,20 @@ export default function LoginModal() {
     }
 
     async function onSubmit() {
-        if (!executeRecaptcha) {
-            setState((prevState) => ({ ...prevState, error: 'recaptcha not yet available' }));
-            return;
-        }
 
-        const token = await executeRecaptcha('login');
-
-        fetch("http://localhost:8080/login", {
+        fetch("http://localhost:8080/gymregister", {
             method: "POST",
             body: JSON.stringify({
-                usermail: state.usermail,
+                name: state.name,
+                email: state.email,
                 password: state.password,
-                recaptcha_token: token,
-            }),
+                confirmation: state.confirmation,
+                address: state.address,
+            })
         })
             .then(async (resp) => {
                 if (resp.status === 200) {
-                    const data = await resp.json();
-                    setUser(data.username)
                     onClose()
-                    navigate('/home')
                     return
                 } else {
                     let errorMessage = await resp.text();
@@ -84,7 +80,7 @@ export default function LoginModal() {
     return (
         <>
             <Box>
-                <Button variant="outlined" onClick={onOpen}>Login</Button>
+                <Button variant="outlined" onClick={onOpen} style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '5px' }}>Register</Button>
 
                 <Dialog onClose={onClose} open={state.open} maxWidth="sm" fullWidth slotProps={{
                     backdrop: {
@@ -93,16 +89,36 @@ export default function LoginModal() {
                         },
                     }
                 }}>
-                    <DialogTitle>Login</DialogTitle>
+                    <DialogTitle>Gym Register</DialogTitle>
                     <DialogContent dividers>
                         <Box>
                             <Box pb={2}>
                                 <TextField
                                     fullWidth
-                                    label="Username/Email"
+                                    label="Gym Name"
                                     variant="outlined"
-                                    id="usermail"
-                                    value={state.usermail}
+                                    id="name"
+                                    value={state.name}
+                                    onChange={onTyping}
+                                />
+                            </Box>
+                            <Box pb={2}>
+                                <TextField
+                                    fullWidth
+                                    label="Gym Email"
+                                    variant="outlined"
+                                    id="email"
+                                    value={state.email}
+                                    onChange={onTyping}
+                                />
+                            </Box>
+                            <Box pb={2}>
+                                <TextField
+                                    fullWidth
+                                    label="Address"
+                                    variant="outlined"
+                                    id="address"
+                                    value={state.address}
                                     onChange={onTyping}
                                 />
                             </Box>
@@ -115,6 +131,17 @@ export default function LoginModal() {
                                     type="password"
                                     value={state.password}
                                     onChange={onTyping}
+                                /> (Passwords must contain at least 8 characters (one uppercase), one number and one special character)
+                            </Box>
+                            <Box pb={2}>
+                                <TextField
+                                    fullWidth
+                                    label="Confirm Password"
+                                    variant="outlined"
+                                    id="confirmation"
+                                    type="password"
+                                    value={state.confirmation}
+                                    onChange={onTyping}
                                 />
                             </Box>
                         </Box>
@@ -123,7 +150,7 @@ export default function LoginModal() {
                                 <Button variant="outlined" onClick={onClose}>Cancel</Button>
                             </Box>
                             <Box pr={1}>
-                                <Button variant="outlined" onClick={onSubmit}>Login</Button>
+                                <Button variant="outlined" onClick={onSubmit}>Register</Button>
                             </Box>
                         </Box>
                         <Box></Box>

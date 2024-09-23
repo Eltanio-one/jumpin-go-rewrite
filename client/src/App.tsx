@@ -1,17 +1,19 @@
 import './App.css';
-import LoginModal from './components/LoginModal';
-import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import HomePage from './HomePage';
+import Login from './Login';
+import { PrivateRoute } from './components/PrivateRoute';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <p>
-          Welcome to JumpIn
-        </p>
-        <GoogleReCaptchaProvider reCaptchaKey="6Lc19UoqAAAAAM2mCg193zC3JghzJDNowoepquia">
-          <LoginModal />
-        </GoogleReCaptchaProvider>
+        <Router>
+          <Routes>
+            <Route path='/' element={<Login />}></Route>
+            <Route path="/home" element={<PrivateRoute><HomePage /></PrivateRoute>}></Route>
+          </Routes>
+        </Router>
       </header>
     </div>
   );

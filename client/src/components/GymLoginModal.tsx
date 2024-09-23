@@ -5,7 +5,7 @@ import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './UserContext';
 
-export default function LoginModal() {
+export default function GymLoginModal() {
 
     const { executeRecaptcha } = useGoogleReCaptcha();
 
@@ -45,46 +45,11 @@ export default function LoginModal() {
         }))
     }
 
-    async function onSubmit() {
-        if (!executeRecaptcha) {
-            setState((prevState) => ({ ...prevState, error: 'recaptcha not yet available' }));
-            return;
-        }
-
-        const token = await executeRecaptcha('login');
-
-        fetch("http://localhost:8080/login", {
-            method: "POST",
-            body: JSON.stringify({
-                usermail: state.usermail,
-                password: state.password,
-                recaptcha_token: token,
-            }),
-        })
-            .then(async (resp) => {
-                if (resp.status === 200) {
-                    const data = await resp.json();
-                    setUser(data.username)
-                    onClose()
-                    navigate('/home')
-                    return
-                } else {
-                    let errorMessage = await resp.text();
-                    setState((prevState) => ({
-                        ...prevState,
-                        error: errorMessage,
-                    })
-                    )
-                }
-            })
-            .catch((err) => console.log(err))
-    }
-
 
     return (
         <>
             <Box>
-                <Button variant="outlined" onClick={onOpen}>Login</Button>
+                <Button variant="outlined" onClick={onOpen} style={{ fontSize: '10px', padding: '5px 10px', borderRadius: '5px' }}>Login</Button>
 
                 <Dialog onClose={onClose} open={state.open} maxWidth="sm" fullWidth slotProps={{
                     backdrop: {
@@ -93,7 +58,7 @@ export default function LoginModal() {
                         },
                     }
                 }}>
-                    <DialogTitle>Login</DialogTitle>
+                    <DialogTitle>Gym Login</DialogTitle>
                     <DialogContent dividers>
                         <Box>
                             <Box pb={2}>
@@ -123,7 +88,7 @@ export default function LoginModal() {
                                 <Button variant="outlined" onClick={onClose}>Cancel</Button>
                             </Box>
                             <Box pr={1}>
-                                <Button variant="outlined" onClick={onSubmit}>Login</Button>
+                                <Button variant="outlined">Login</Button>
                             </Box>
                         </Box>
                         <Box></Box>
@@ -137,5 +102,4 @@ export default function LoginModal() {
             </Box>
         </>
     )
-
 }
