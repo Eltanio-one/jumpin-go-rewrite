@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -12,7 +13,8 @@ import (
 
 type User struct {
 	UserID         int
-	Usermail       string
+	Username       string
+	Email          string
 	Hash           string
 	DateOfBirth    time.Time
 	AccountCreated time.Time
@@ -43,20 +45,45 @@ func InitialiseConnection() (*sql.DB, error) {
 	return db, nil
 }
 
-func FetchRow(db *sql.DB, query string, args ...interface{}) (*User, error) {
+func FetchUser(db *sql.DB, query string, args ...interface{}) (*User, error) {
 	var user User
 	err := db.QueryRow(query, args...).Scan(
 		&user.UserID,
-		&user.Usermail,
+		&user.Username,
+		&user.Email,
 		&user.Hash,
 		&user.DateOfBirth,
 		&user.AccountCreated,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &User{}, fmt.Errorf("user does not exist in database")
+			return &User{}, ErrUserDoesNotExist
 		}
 		return &User{}, err
 	}
 	return &user, nil
 }
+
+func CheckDuplicate(db *sql.DB, query string, args ...interface{}) (*User, error) {
+	var user User
+	err := db.QueryRow(query, args...).Scan(
+		&user.Username,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &user, nil
+		}
+		return &User{}, err
+	}
+	return &user, nil
+}
+
+func Insert(db *sql.DB, query string, args ...interface{}) error {
+	_, err := db.Exec(query, args...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+var ErrUserDoesNotExist = errors.New("user does not exist in database")

@@ -39,6 +39,10 @@ func main() {
 
 	mux.Handle("/ping", http.HandlerFunc(handler.Ping))
 	mux.Handle("/login", http.HandlerFunc(handler.Login))
+	mux.Handle("/register", http.HandlerFunc(handler.Register))
+	mux.Handle("/registergym", http.HandlerFunc(handler.RegisterGym))
+	mux.Handle("/assigngym", http.HandlerFunc(handler.AssignGym))
+	mux.Handle("/sessionplan", http.HandlerFunc(handler.SessionPlan))
 
 	srvr := &http.Server{
 		Addr:         "localhost:8080",

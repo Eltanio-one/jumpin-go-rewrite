@@ -13,17 +13,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type registerRequest struct {
-	Username             string `json:"username"`
-	Email                string `jsom:"email"`
-	Name                 string `json:"name"`
+type registerGymRequest struct {
+	GymName              string `json:"gymname"`
+	Address              string `json:"address"`
 	Password             string `json:"password"`
 	PasswordConfirmation string `json:"confirmation"`
-	DateOfBirth          string `json:"dateOfBirth"`
+	Email                string `json:"email"`
 }
 
-func Register(w http.ResponseWriter, r *http.Request) {
-	logger := log.New(os.Stdout, "register", log.LstdFlags)
+func RegisterGym(w http.ResponseWriter, r *http.Request) {
+	logger := log.New(os.Stdout, "registerGym", log.LstdFlags)
 
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -43,7 +42,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var requestData registerRequest
+	var requestData registerGymRequest
 
 	err = json.Unmarshal(body, &requestData)
 	if err != nil {
@@ -52,7 +51,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check for duplicates
 	db, err := database.InitialiseConnection()
 	if err != nil {
 		logger.Printf("error=%q statuscode=%d message=%q", "database connection error", http.StatusInternalServerError, err.Error())
@@ -61,7 +59,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	dup, err := database.CheckDuplicate(db, "SELECT username FROM users WHERE username = $1", requestData.Username)
+	dup, err := database.CheckDuplicate(db, "SELECT gymname FROM gyms WHERE gymname = $1", requestData.GymName)
 	if err != nil {
 		logger.Printf("error=%q statuscode=%d message=%q", "database connection error", http.StatusInternalServerError, err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -73,7 +71,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// validate all data provided
 	err = validate.Email(requestData.Email)
 	if err != nil {
 		logger.Printf("error=%q statuscode=%d message=%q", "invalid request parameter", http.StatusBadRequest, err)
@@ -100,28 +97,12 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestData.DateOfBirth == "" {
-		logger.Printf("error=%q statuscode=%d message=%q", "invalid request parameter", http.StatusInternalServerError, "please provide your date of birth")
-		http.Error(w, "please provide ysour date of birth", http.StatusInternalServerError)
-		return
-	}
-
-	requestData.DateOfBirth = formatDate(requestData.DateOfBirth)
-
-	_, err = validate.Date(requestData.DateOfBirth)
-	if err != nil {
-		logger.Printf("error=%q statuscode=%d message=%q", "failed to validate date of birth", http.StatusInternalServerError, err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	// insert user into db
-	err = database.Insert(db, "INSERT INTO users (username, email, hash, dateofbirth, accountcreated, name) VALUES ($1, $2, $3, $4, NOW(), $5)",
-		requestData.Username,
+	err = database.Insert(db, "INSERT INTO gyms (username, email, hash, accountcreated, address) VALUES ($1, $2, $3, $4, NOW(), $5)",
+		requestData.GymName,
 		requestData.Email,
 		hash,
-		requestData.DateOfBirth,
-		requestData.Name,
+		requestData.Address,
 	)
 	if err != nil {
 		logger.Printf("error=%q statuscode=%d message=%q", "database connection error", http.StatusInternalServerError, err)
@@ -129,6 +110,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(fmt.Sprintf("User %s Registered Successfully", requestData.Username)))
+	w.Write([]byte(fmt.Sprintf("Gym %s Registered Successfully", requestData.GymName)))
 	w.WriteHeader(http.StatusOK)
 }
